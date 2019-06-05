@@ -4,6 +4,7 @@ package com.example.testactivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,19 +23,24 @@ import java.util.Map;
 
 public class MyAdapter extends BaseAdapter {
     private static final String TAG = "MyAdapter";
-    private ArrayList<Map<String, String>> imagelist;
-    private Context mcontext;
+    private ArrayList<PictureInfo> imagelist;
+    private Context mContext;
     private ImageView image1;
     private ImageView image2;
+    private TextView textViewone;
+    private TextView textViewtwo;
 
-    public MyAdapter(Context context, ArrayList<Map<String, String>> list) {
+
+
+    public MyAdapter(ArrayList<PictureInfo> list) {
         imagelist = list;
-        mcontext = context;
+
+        Log.i(TAG, "getView: "+"进入Adapter");
     }
 
     @Override
     public int getCount() {
-        return imagelist.size();
+        return imagelist.size()/2;
     }
 
     @Override
@@ -47,12 +55,29 @@ public class MyAdapter extends BaseAdapter {
 
 
     public View getView(int position, View convertView, ViewGroup parent) {
+        if(mContext==null){
+            mContext=parent.getContext();
+        }
 
 //            if (convertView==null){
-        convertView = LayoutInflater.from(mcontext).inflate(R.layout.list_item, null);
+        convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, null);
 
         image1 = (ImageView) convertView.findViewById(R.id.image_item1);
         image2 = (ImageView) convertView.findViewById(R.id.image_item2);
+        textViewone=(TextView) convertView.findViewById(R.id.textView1);
+        textViewtwo=(TextView) convertView.findViewById(R.id.textView2);
+        int posi=((position+1)*2-1);
+        Glide.with(mContext).load(imagelist.get(posi-1).getImage()).placeholder(R.drawable.jia).into(image1);
+        textViewone.setText(imagelist.get(posi-1).getTitle());
+        Glide.with(mContext).load(imagelist.get(posi).getImage()).placeholder(R.drawable.jia).into(image2);
+        textViewtwo.setText(imagelist.get(posi).getTitle());
+        Log.i(TAG, "getView: "+imagelist.get(posi).getTitle());
+        //with参数代表上下文，load参数url表示资源的路径，placeholder参数表示等待期间展
+        // 示的图片，error参数表示加载异常展示，thumbnail参数表示缩略图，into参数表示加载到的ImageView
+//        image1.setOnClickListener(new convertView.onClickListener(){
+//
+//        }
+//        );
 
         return convertView;
     }
