@@ -8,6 +8,10 @@ import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
@@ -34,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements AbsListView.OnScrollListener{
+public class MainActivity extends AppCompatActivity {
 
     private MyAdapter listItemAdapter; // 适配器
     private ArrayList<PictureInfo> listItems; // 存放文字、图片信息
@@ -44,9 +48,10 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
     private String mSize = "0";
     private String mColor = "0";
     private String mPage = "1";
-    private ListView listView;
+    private RecyclerView recyclerView;
     private Handler handler;
-    SwipeRefreshLayout swipeRefreshLayout;
+
+    StaggeredGridLayoutManager layoutManager;
 //    private static final int UPDATE = 0;
 //    private static final int MESSAGE = 1;
 
@@ -54,42 +59,68 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        listView = (ListView) findViewById(R.id.list1);
-        //初始化数据
-        initData();
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);  //实例化rec
+
+
+//        StaggeredGridLayoutManager layoutM = new StaggeredGridLayoutManager(2,StggeredGridLayoutManager.VERTICAL);
+//        recyclerView.setLayoutManager(layoutM);     //设置View
+//        RecyclerView.LayoutManager  layoutManager = new LinearLayoutManager(this);
+//        recyclerView.setLayoutManager(layoutManager);       //添加布局管理器  此布局以线性布局显示
+
+
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    RecyclerView.LayoutManager layoutManager1 = recyclerView.getLayoutManager();
+                    if (layoutManager1 instanceof StaggeredGridLayoutManager) {
+                        StaggeredGridLayoutManager lm = (StaggeredGridLayoutManager) layoutManager1;
+                        int columnCount = lm.getSpanCount();
+                        int positions[] = new int[columnCount];
+                        lm.findLastVisibleItemPositions(positions);//添加可见的最后一行的position数据到数组positions
+                        for (int i = 0; i < positions.length; i++) {
+                            /**
+                             * 判断lastItem的底边到recyclerView顶部的距离
+                             * 是否小于recyclerView的高度
+                             * 如果小于或等于说明滚动到了底部
+                             */
+                            if (positions[i] >= lm.getItemCount() - columnCount) {
+
+                                Log.i(TAG, "onScrollStateChanged: "+"到底了");
+                                LoadData1();
+
+                                //这里写要调用的东西
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+
+            }
+        });
         listItems = new ArrayList<PictureInfo>();
-
-        listView.setOnScrollListener(this);
-
-        //        parseHtml(listItems);
-
-//        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefresh);
-//        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//
-//                try{
-//                    Thread.sleep(2000);
-//                    mPage=mPage+1;
-//                    initText();
-//                    Log.i("刷新","233");
-//                }
-//                catch (Exception e){
-//                    Log.i("刷新时候的错误信息：",e+"");
-//                }
-//
-//            }
-//        });
-
+        LoadData();
         handler = new Handler() {
             public void handleMessage(Message msg) {
                 if (msg.what == 5) {
+
                     listItems = (ArrayList<PictureInfo>) msg.obj;
-                    Log.i(TAG, "handleMessage: " + "传回信息");
-                    listItemAdapter = new MyAdapter(listItems);
-                    Log.i(TAG, "onCreate: " + "运行到了Adapter之前");
-                    listView.setAdapter(listItemAdapter);
-                } else {
+                    initView();
+//                    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+//                    listItemAdapter.setData(listItems);
+//                    listItemAdapter.notifyDataSetChanged();
+
+                } else if(msg.what == 7){
+                    listItems = (ArrayList<PictureInfo>) msg.obj;
+                    listItemAdapter.setData(listItems);
+                    listItemAdapter.notifyDataSetChanged();
+                }else {
                     Toast.makeText(MainActivity.this, "已经到头了，看看别的壁纸吧", Toast.LENGTH_SHORT).show();
                 }
                 super.handleMessage(msg);
@@ -98,13 +129,12 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
 
     }
 
-    //
-//private void parseHtml(List<PictureInfo> listItems){
-//
-//}
 
-    public void initData(){
+
+    public void LoadData() {
         new Thread(new Runnable() {
+
+
             @Override
             public void run() {
                 try {
@@ -126,6 +156,13 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
                         Log.i(TAG, "run: " + "放入pictureInfo");
                         listItems.add(pictureInfo);
 
+                        Message msg = handler.obtainMessage(5);
+                        //msg.what=5;
+                        // msg1.obj="hello for run";
+                        msg.obj = listItems;
+                        handler.sendMessage(msg);
+
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -133,34 +170,80 @@ public class MainActivity extends AppCompatActivity implements AbsListView.OnScr
 
                     handler.sendEmptyMessage(6);
                 }
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        listItemAdapter.notifyDataSetChanged();
 
+                        Log.i(TAG, "run: " + "提醒");
+
+                        listItemAdapter.notifyDataSetChanged();
                     }
                 });
             }
 
         }).start();
     }
+    public void LoadData1() {
+        new Thread(new Runnable() {
 
-    @Override
-    public void onScrollStateChanged(AbsListView absListView, int i) {
 
+            @Override
+            public void run() {
+                try {
+                    int page = Integer.valueOf(mPage)+1;
+                    Log.i(TAG, "run: page== "+mPage);
+                    mPage = String.valueOf(page);
+                    Document document = Jsoup.connect("http://www.win4000.com/mobile_" + mCategroey + "_" + mColor + "_" + mSize + "_" + mPage + ".html").get();
+                    Elements elements = document.select("div.Left_bar ul li");
+
+                    for (Element element : elements) {
+                        String image = element.select("a").first().children().first().attr("data-original");
+                        String url = element.select("a").first().attr("href");
+                        String title = element.select("a").first().attr("title");
+                        Log.d("图片", image);
+                        Log.d("连接", url);
+                        Log.d("标题", title);
+
+                        PictureInfo pictureInfo = new PictureInfo();
+                        pictureInfo.setImage(image);
+                        pictureInfo.setUrl(url);
+                        pictureInfo.setTitle(title);
+                        Log.i(TAG, "run: " + "放入pictureInfo");
+                        listItems.add(pictureInfo);
+
+                        Message msg = handler.obtainMessage(7);
+                        msg.obj = listItems;
+                        handler.sendMessage(msg);
+
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.i(TAG, "运行到了2222之后" + e);
+
+                    handler.sendEmptyMessage(6);
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Log.i(TAG, "run: " + "提醒");
+
+                        listItemAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+
+        }).start();
+    }
+    private void initView() {
+
+
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        listItemAdapter = new MyAdapter(listItems);
+        recyclerView.setAdapter(listItemAdapter);
     }
 
-    @Override
-    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-        if (firstVisibleItem + visibleItemCount == totalItemCount && totalItemCount > 0) {
-            // 滚动到最后一行了'
-            Log.i(TAG, "onScroll: "+"滑到了最后一行");
-            int page = Integer.valueOf(mPage) + 1;
-            mPage = String.valueOf(page);
-            initData();
-        }
-
-    }
 }
-
