@@ -1,10 +1,15 @@
 package com.example.testactivity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -51,9 +56,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private Handler handler;
 
-    StaggeredGridLayoutManager layoutManager;
-//    private static final int UPDATE = 0;
-//    private static final int MESSAGE = 1;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +65,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);  //实例化rec
 
-
 //        StaggeredGridLayoutManager layoutM = new StaggeredGridLayoutManager(2,StggeredGridLayoutManager.VERTICAL);
 //        recyclerView.setLayoutManager(layoutM);     //设置View
 //        RecyclerView.LayoutManager  layoutManager = new LinearLayoutManager(this);
 //        recyclerView.setLayoutManager(layoutManager);       //添加布局管理器  此布局以线性布局显示
+
 
 
 
@@ -109,12 +113,8 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler() {
             public void handleMessage(Message msg) {
                 if (msg.what == 5) {
-
                     listItems = (ArrayList<PictureInfo>) msg.obj;
                     initView();
-//                    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-//                    listItemAdapter.setData(listItems);
-//                    listItemAdapter.notifyDataSetChanged();
 
                 } else if(msg.what == 7){
                     listItems = (ArrayList<PictureInfo>) msg.obj;

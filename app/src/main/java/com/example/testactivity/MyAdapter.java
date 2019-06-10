@@ -22,21 +22,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private Context mContext;
     int mPosition;
     private ArrayList<PictureInfo> imagelist;
-//    private ImageView image1;
-//    private ImageView image2;
-//    private TextView textViewone;
-//    private TextView textViewtwo;
+
 
     static   class ViewHolder extends RecyclerView.ViewHolder {
         View itemView;
         ImageView image1;
-        TextView textViewone;
+//        TextView textViewone;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.itemView = itemView;
             image1=(ImageView)itemView.findViewById(R.id.image_item1);
-            textViewone=(TextView)itemView.findViewById(R.id.textView1);
+//            textViewone=(TextView)itemView.findViewById(R.id.textView1);
         }
     }
 
@@ -70,7 +67,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
-        viewHolder.textViewone.setText(imagelist.get(position).getTitle());
+//        viewHolder.textViewone.setText(imagelist.get(position).getTitle());
         Glide.with(mContext).load(imagelist.get(position).getImage()).placeholder(R.drawable.jia).into(viewHolder.image1);
         mPosition = position;
         Log.e("mPosition:",mPosition+"");
