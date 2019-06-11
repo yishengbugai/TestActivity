@@ -5,6 +5,11 @@ public class PictureInfo {
     private String image;
     private String title;
 
+    public  PictureInfo(){
+
+    }
+
+
     public String getImage() {
         return image;
     }

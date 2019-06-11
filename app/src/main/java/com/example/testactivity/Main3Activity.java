@@ -10,9 +10,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabItem;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -22,8 +19,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -49,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class Main3Activity extends AppCompatActivity {
 
     private MyAdapter listItemAdapter; // 适配器
     private ArrayList<PictureInfo> listItems; // 存放文字、图片信息
@@ -61,9 +56,8 @@ public class MainActivity extends AppCompatActivity {
     private String mPage = "1";
     private RecyclerView recyclerView;
     private Handler handler;
-    private  TabLayout tableLayout;
-    TabItem tabItem1;
-    TabItem tabItem2;
+
+
 
 
     @Override
@@ -71,8 +65,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        Intent intent = getIntent();
+        mCategroey = intent.getStringExtra("Url");
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);  //实例化rec
+
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
@@ -112,16 +108,14 @@ public class MainActivity extends AppCompatActivity {
         LoadData();
         handler = new Handler() {
             public void handleMessage(Message msg) {
-                if (msg.what == 5) {
+                if (msg.what == 9) {
                     listItems = (ArrayList<PictureInfo>) msg.obj;
                     initView();
 
-                } else if(msg.what == 7){
+                } else if(msg.what == 10){
                     listItems = (ArrayList<PictureInfo>) msg.obj;
                     listItemAdapter.setData(listItems);
                     listItemAdapter.notifyDataSetChanged();
-                }else {
-                    Toast.makeText(MainActivity.this, "已经到头了，看看别的壁纸吧", Toast.LENGTH_SHORT).show();
                 }
                 super.handleMessage(msg);
             }
@@ -156,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "run: " + "放入pictureInfo");
                         listItems.add(pictureInfo);
 
-                        Message msg = handler.obtainMessage(5);
+                        Message msg = handler.obtainMessage(9);
                         //msg.what=5;
                         // msg1.obj="hello for run";
                         msg.obj = listItems;
@@ -212,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "run: " + "放入pictureInfo");
                         listItems.add(pictureInfo);
 
-                        Message msg = handler.obtainMessage(7);
+                        Message msg = handler.obtainMessage(10);
                         msg.obj = listItems;
                         handler.sendMessage(msg);
 
@@ -244,19 +238,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         listItemAdapter = new MyAdapter(listItems);
         recyclerView.setAdapter(listItemAdapter);
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.variety,menu);
-        return true;
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.more_pic){
-            Intent intent = new Intent(this,Main2Activity.class);
-            startActivity(intent);
-        }
-        return super.onOptionsItemSelected(item);
     }
 
 }

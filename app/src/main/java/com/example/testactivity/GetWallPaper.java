@@ -26,6 +26,12 @@ import java.net.URL;
 public class GetWallPaper {
     private static final String TAG = "GetWallPaper";
     private static String filePath;
+    private static Bitmap mBitmap;
+    private static Context context;
+    private static String mSaveMessage;
+    private static String mFileName="妹子图片";
+
+
 
     public static void setWallpaper(final Activity activity, final String imgUrl) {
         filePath = imgUrl;
