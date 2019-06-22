@@ -48,14 +48,15 @@ public class Main3Activity extends AppCompatActivity {
 
     private MyAdapter listItemAdapter; // 适配器
     private ArrayList<PictureInfo> listItems; // 存放文字、图片信息
-    String TAG = "MainActivity";
-    String html;
-    private String mCategroey = "0";
+    String TAG = "Main3Activity";
     private String mSize = "0";
     private String mColor = "0";
     private String mPage = "1";
     private RecyclerView recyclerView;
     private Handler handler;
+    String url;
+    String type;
+    private ArrayList uurl =new ArrayList();
 
 
 
@@ -66,36 +67,16 @@ public class Main3Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Intent intent = getIntent();
-        mCategroey = intent.getStringExtra("Url");
+        url = intent.getStringExtra("Url");
+        type = intent.getStringExtra("Type");
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);  //实例化rec
-
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    RecyclerView.LayoutManager layoutManager1 = recyclerView.getLayoutManager();
-                    if (layoutManager1 instanceof StaggeredGridLayoutManager) {
-                        StaggeredGridLayoutManager lm = (StaggeredGridLayoutManager) layoutManager1;
-                        int columnCount = lm.getSpanCount();
-                        int positions[] = new int[columnCount];
-                        lm.findLastVisibleItemPositions(positions);//添加可见的最后一行的position数据到数组positions
-                        for (int i = 0; i < positions.length; i++) {
-                            /**
-                             * 判断lastItem的底边到recyclerView顶部的距离
-                             * 是否小于recyclerView的高度
-                             * 如果小于或等于说明滚动到了底部
-                             */
-                            if (positions[i] >= lm.getItemCount() - columnCount) {
-
-                                Log.i(TAG, "onScrollStateChanged: "+"到底了");
-                                LoadData1();
-
-                                //这里写要调用的东西
-                            }
-                        }
-
-                    }
+                if ( recyclerView.canScrollVertically(1)==false) {
+                    Log.i(TAG, "onScrollStateChanged: "+"到底了");
+                    LoadData1();
                 }
             }
 
@@ -132,7 +113,23 @@ public class Main3Activity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Document document = Jsoup.connect("http://www.win4000.com/mobile_" + mCategroey + "_" + mColor + "_" + mSize + "_" + mPage + ".html").get();
+                    Document document = Jsoup.connect(url).get();
+                    Elements elements = document.select("div.pages a");   //解释
+                    int i =0;
+                    for (Element element : elements) {
+                        uurl.add(element.select("a").attr("href"));
+                        Log.d("剩余页数链接",(String) uurl.get(i));
+                        i++;
+                    }
+
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+
+                }
+
+                try {
+                    Document document = Jsoup.connect(url).get();
                     Elements elements = document.select("div.Left_bar ul li");
 
                     for (Element element : elements) {
@@ -151,8 +148,6 @@ public class Main3Activity extends AppCompatActivity {
                         listItems.add(pictureInfo);
 
                         Message msg = handler.obtainMessage(9);
-                        //msg.what=5;
-                        // msg1.obj="hello for run";
                         msg.obj = listItems;
                         handler.sendMessage(msg);
 
@@ -160,9 +155,6 @@ public class Main3Activity extends AppCompatActivity {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Log.i(TAG, "运行到了2222之后" + e);
-
-                    handler.sendEmptyMessage(6);
                 }
 
                 runOnUiThread(new Runnable() {
@@ -185,10 +177,11 @@ public class Main3Activity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    int page = Integer.valueOf(mPage)+1;
-                    Log.i(TAG, "run: page== "+mPage);
-                    mPage = String.valueOf(page);
-                    Document document = Jsoup.connect("http://www.win4000.com/mobile_" + mCategroey + "_" + mColor + "_" + mSize + "_" + mPage + ".html").get();
+                    int i=0;
+//                    int page = Integer.valueOf(mPage)+1;
+//                    mPage = String.valueOf(page);
+//                    Log.i(TAG, "run: page== "+mPage);
+                    Document document = Jsoup.connect((String) uurl.get(i)).get();
                     Elements elements = document.select("div.Left_bar ul li");
 
                     for (Element element : elements) {
@@ -206,6 +199,8 @@ public class Main3Activity extends AppCompatActivity {
                         Log.i(TAG, "run: " + "放入pictureInfo");
                         listItems.add(pictureInfo);
 
+                        i++;  //翻页
+
                         Message msg = handler.obtainMessage(10);
                         msg.obj = listItems;
                         handler.sendMessage(msg);
@@ -215,8 +210,6 @@ public class Main3Activity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.i(TAG, "运行到了2222之后" + e);
-
-                    handler.sendEmptyMessage(6);
                 }
 
                 runOnUiThread(new Runnable() {
@@ -235,8 +228,8 @@ public class Main3Activity extends AppCompatActivity {
     private void initView() {
 
 
-        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-        listItemAdapter = new MyAdapter(listItems);
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
+        listItemAdapter = new MyAdapter(listItems,type);
         recyclerView.setAdapter(listItemAdapter);
     }
 

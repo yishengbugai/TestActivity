@@ -27,8 +27,10 @@ import okhttp3.Response;
 public class ImageActivity extends AppCompatActivity {
     private RecyclerView recy1;
     private String url;
+    private String type;
     private ArrayList<ImageList> iList = new ArrayList<>();
     private ImageList moreImage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +39,10 @@ public class ImageActivity extends AppCompatActivity {
         recy1 = (RecyclerView) findViewById(R.id.recy1);
         Intent intent = getIntent();
         url = intent.getStringExtra("Url");
+        type = intent.getStringExtra("Type");
 
-      ParseHtml();
+        ParseHtml();
+
     }
 
 
@@ -50,7 +54,8 @@ public class ImageActivity extends AppCompatActivity {
             public void run() {
                 try {
                     Document document = Jsoup.connect(url).get();
-                    Elements elements = document.select("div.scroll-img-cont ul li");
+//                    Elements tables=document.getElementsByTag("dd");
+                    Elements elements = document.select("ul[id=scroll] li");
                     for (Element element : elements) {
                         String imagelist = element.select("a").first().children().first().attr("data-original");
                         String imageurl0 = imagelist.substring(0, imagelist.indexOf("_"));
@@ -61,8 +66,6 @@ public class ImageActivity extends AppCompatActivity {
                         iList.add(moreImage);
 
                         Message msg = handler.obtainMessage(8);
-                        //msg.what=5;
-                        // msg1.obj="hello for run";
                         msg.obj = iList;
                         handler.sendMessage(msg);
 
@@ -74,6 +77,8 @@ public class ImageActivity extends AppCompatActivity {
         }).start();;
 
     }
+
+
 
     private Handler handler = new Handler(){
         public void handleMessage(Message msg){
@@ -87,7 +92,7 @@ public class ImageActivity extends AppCompatActivity {
     private void initImage(){
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recy1.setLayoutManager(linearLayoutManager);
-        MoreAdapter adapter = new MoreAdapter(iList);
+        MoreAdapter adapter = new MoreAdapter(iList,type);
         recy1.setAdapter(adapter);
     }
 }

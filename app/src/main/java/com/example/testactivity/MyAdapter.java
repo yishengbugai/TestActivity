@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private static final String TAG = "MyAdapter";
-
+    String type;
     private Context mContext;
     int mPosition;
     private ArrayList<PictureInfo> imagelist;
@@ -27,20 +27,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     static   class ViewHolder extends RecyclerView.ViewHolder {
         View itemView;
         ImageView image1;
-//        TextView textViewone;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.itemView = itemView;
             image1=(ImageView)itemView.findViewById(R.id.image_item1);
-//            textViewone=(TextView)itemView.findViewById(R.id.textView1);
         }
     }
 
 
-    public MyAdapter(ArrayList<PictureInfo> list) {
+    public MyAdapter(ArrayList<PictureInfo> list,String s) {
         imagelist = list;
-
+        type=s;
         Log.i(TAG, "getView: "+"进入Adapter");
     }
 
@@ -58,6 +56,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                 int postion = holder.getAdapterPosition();
                 Intent intent = new Intent(mContext,ImageActivity.class);
                 intent.putExtra("Url",imagelist.get(postion).getUrl());
+                intent.putExtra("Type",type);
                 mContext.startActivity(intent);
             }
         });
@@ -67,7 +66,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
-//        viewHolder.textViewone.setText(imagelist.get(position).getTitle());
         Glide.with(mContext).load(imagelist.get(position).getImage()).placeholder(R.drawable.jia).into(viewHolder.image1);
         mPosition = position;
         Log.e("mPosition:",mPosition+"");

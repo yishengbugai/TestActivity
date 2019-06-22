@@ -8,14 +8,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +28,7 @@ import java.net.URL;
 
 public class GetWallPaper {
     private static final String TAG = "GetWallPaper";
+    private static String judge1;
     private static String filePath;
     private static Bitmap mBitmap;
     private static Context context;
@@ -33,8 +37,9 @@ public class GetWallPaper {
 
 
 
-    public static void setWallpaper(final Activity activity, final String imgUrl) {
-        filePath = imgUrl;
+    public static void setWallpaper(final Activity activity, final String imgUrl,final String judge) {
+
+        judge1=judge;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -74,16 +79,28 @@ public class GetWallPaper {
                         }
 
                         //读取该文件中的内容
+                        final InputStream data=new FileInputStream(download.getAbsolutePath());
                         final Bitmap bitmap = BitmapFactory.decodeFile(download.getAbsolutePath());
                         activity.runOnUiThread(new Runnable() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
                             @Override
                             public void run() {
                                 //设置图片为壁纸
                                 //Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.bg_user_top);//设置项目res中的图片
                                 WallpaperManager manager = WallpaperManager.getInstance(activity);
                                 try {
-                                    manager.setBitmap(bitmap);
-                                    Log.i(TAG, "run: "+"设置成功");
+                                    if(judge1.equals("主屏幕")){
+                                    manager.setStream(data,null,true,WallpaperManager.FLAG_SYSTEM);
+//                                    manager.setBitmap(bitmap);
+                                    Log.i(TAG, "run: "+"主屏幕设置成功");
+                                        Toast.makeText(activity, "主屏幕设置成功", Toast.LENGTH_SHORT).show();}
+                                    else if(judge1.equals("锁屏")){
+                                        manager.setStream(data,null,true,WallpaperManager.FLAG_LOCK);
+//                                    manager.setBitmap(bitmap);
+                                        Toast.makeText(activity, "锁屏设置成功", Toast.LENGTH_SHORT).show();
+                                        Log.i(TAG, "run: "+"锁屏设置成功");
+                                    }
+
                                 } catch (IOException e) {
 
                                     e.printStackTrace();

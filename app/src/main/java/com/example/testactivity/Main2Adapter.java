@@ -22,7 +22,7 @@ public class Main2Adapter extends RecyclerView.Adapter<Main2Adapter.ViewHolder> 
     private Context mContext;
     int mPosition;
     private ArrayList<PictureInfo> imagelist;
-
+    String type;
 
     static   class ViewHolder extends RecyclerView.ViewHolder {
         View itemView;
@@ -38,9 +38,9 @@ public class Main2Adapter extends RecyclerView.Adapter<Main2Adapter.ViewHolder> 
     }
 
 
-    public Main2Adapter(ArrayList<PictureInfo> list) {
+    public Main2Adapter(ArrayList<PictureInfo> list,String s) {
         imagelist = list;
-
+        type=s;
         Log.i(TAG, "getView: "+"进入Adapter");
     }
 
@@ -58,6 +58,7 @@ public class Main2Adapter extends RecyclerView.Adapter<Main2Adapter.ViewHolder> 
                 int postion = holder.getAdapterPosition();
                 Intent intent = new Intent(mContext,Main3Activity.class);
                 intent.putExtra("Url",imagelist.get(postion).getUrl());
+                intent.putExtra("Type",type);
                 mContext.startActivity(intent);
             }
         });
